@@ -7,7 +7,20 @@ def main():
 
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
     conn, addr = server_socket.accept() # wait for client
-    conn.send(b"HTTP/1.1 200 OK\r\n\r\n")
+    
+    with conn:
+        print(f"connection from {addr} established.")
+        while True:
+            data = conn.recv(4096)
+            if not data:
+                break
+            if "GET / " in data.decode('utf-8'):
+                conn.send(b"HTTP/1.1 200 OK\r\n\r\n")
+            else: 
+                conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
+       
+    
+    
 
 
 if __name__ == "__main__":
