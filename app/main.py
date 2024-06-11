@@ -2,13 +2,21 @@ import socket
 
 
 def extract_str(data):
+    decoded_data = data.decode().split('\r\n')[0].split(' ')[1].split('/')
+    
+    if decoded_data[1] == 'echo':
+        str = decoded_data[2]
+        return str
+    else:
+        return None
+
+def extract_user_agent(data):
     decoded_data = data.decode().split('\r\n')
     
-    # need error handling here
-    try:
-        str = decoded_data[0].split(' ')[1].split('/')[2]
-        return str
-    except:
+    if decoded_data[0].split(' ')[1] == "/user-agent":
+        ua = decoded_data[2].split(' ')[1]
+        return ua
+    else:
         return None
 
 def main():
@@ -25,10 +33,15 @@ def main():
             if not data:
                 break
             str = extract_str(data)
+            ua = extract_user_agent(data)
             if "GET / " in data.decode('utf-8'):
                 conn.send(b"HTTP/1.1 200 OK\r\n\r\n")
-            elif str is None:
+            elif str is None and ua is None:
                 conn.send(b"HTTP/1.1 404 Not Found\r\n\r\n")
+            elif ua is not None:
+                format = "text/plain"
+                response = f"HTTP/1.1 200 OK\r\nContent-Type: {format}\r\nContent-Length: {len(ua)}\r\n\r\n{ua}"
+                conn.send(response.encode())
             else:
                 format = "text/plain"
                 response = f"HTTP/1.1 200 OK\r\nContent-Type: {format}\r\nContent-Length: {len(str)}\r\n\r\n{str}"
