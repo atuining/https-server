@@ -9,7 +9,6 @@ def extract(data):
     elif "/echo/" in decoded_data:
         return decoded_data.split('/')[2]
     elif decoded_data=="/user-agent":
-        print(f"{data.decode().split('\r\n')[2].split(' ')[1]}")
         return data.decode().split('\r\n')[2].split(' ')[1]
     else:
         return ""
