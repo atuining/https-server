@@ -10,7 +10,13 @@ def extract(data:bytes)->bytes:
     req = data.split('\r\n')
     path = req[0].split(' ')[1]
     type = req[0].split(' ')[0]
-    
+    response = "HTTP/1.1 ".encode()
+    encoding_bool = False
+    encoding=""
+    if not req[2].endswith("invalid-encoding"):
+        encoding_bool = True
+        encoding = req[2].split(' ')[1]
+        
     
     if type == "GET":
         if path == "/":
@@ -19,10 +25,10 @@ def extract(data:bytes)->bytes:
             str = path.split('/')[2]
             return f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(str)}\r\n\r\n{str}".encode()
         elif path == "/user-agent":
-            str = req[2].split(' ')[1]
+            str = req[2+encoding_bool].split(' ')[1]
             return f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(str)}\r\n\r\n{str}".encode()
         elif path.startswith("/files"):
-            directory = sys.argv[2]
+            directory = sys.argv[3]
             filename = path[7:]
             Content_Type = "application/octet-stream"
             Content_Length = 0
@@ -38,11 +44,11 @@ def extract(data:bytes)->bytes:
             return "HTTP/1.1 404 Not Found\r\n\r\n".encode()
     elif type=="POST":
         if path.startswith("/files"):
-            directory = sys.argv[2]
+            directory = sys.argv[3]
             filename = path[7:]
-            Content_Type = req[3].split(' ')[1]
-            Content_Length = req[2].split(' ')[1]
-            body = req[5]
+            Content_Type = req[4].split(' ')[1]
+            Content_Length = req[5].split(' ')[1]
+            body = req[6]
             try:
                 with open(f"/{directory}/{filename}", "w") as f:
                     f.write(body)
